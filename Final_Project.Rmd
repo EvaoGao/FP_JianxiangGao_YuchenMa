@@ -1,0 +1,260 @@
+---
+title: "Untitled"
+author: "Yuchen Ma"
+date: "2023-11-25"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Step 1: Data Preparation
+## Loading and Inspecting Data
+
+```{r}
+# Load necessary libraries
+library(readr)
+library(dplyr)
+library(tidyr)
+library(readxl)
+
+# Read the data from the CSV file
+Cancer_Rates <- read_excel("C:/Users/mayc0/OneDrive/桌面/Cancer_Rates.xlsx")
+View(Cancer_Rates)
+
+# Inspect the structure of the data
+str(Cancer_Rates)
+glimpse(Cancer_Rates)
+head(Cancer_Rates)
+
+```
+
+#Step 2: Data Wrangling
+##Focus on selecting and cleaning the data relevant to the cancer types of interest.
+```{r}
+library(dplyr)
+cancer_data_selected <- select(Cancer_Rates, Colorectal, Lung_Bronc, Breast_Can, Prostate_C, Urinary_Sy)
+
+```
+##Check for Missing Values:
+```{r}
+sum(is.na(cancer_data_selected))
+
+```
+
+#Step 3: Statistical Analysis
+##Perform an ANOVA test to determine if there are differences among the cancer types.
+```{r}
+library(tidyr)
+library(dplyr)
+
+# Assuming cancer_data_selected is your dataframe with the relevant columns
+cancer_data_long <- pivot_longer(
+  cancer_data_selected,
+  cols = c(Colorectal, Lung_Bronc, Breast_Can, Prostate_C, Urinary_Sy),
+  names_to = "Cancer_Type",
+  values_to = "Incidence_Rate"
+)
+
+# Now perform ANOVA with the correct formula
+res <- aov(Incidence_Rate ~ Cancer_Type, data = cancer_data_long)
+summary(res)
+
+```
+
+
+#Step 4: Data Visualization
+##Create visualizations to support your statistical analysis.
+```{r}
+library(ggplot2)
+cancer_data_long <- pivot_longer(cancer_data_selected, cols = everything(), names_to = "Cancer_Type", values_to = "Rate")
+
+ggplot(cancer_data_long, aes(x = Cancer_Type, y = Rate)) +
+    geom_boxplot() +
+    labs(title = "Incidence Rates of Different Cancers in Lake County, Illinois", x = "Cancer Type", y = "Incidence Rate")
+
+
+#Based on the ANOVA results quoted from your document, we have a highly significant F-value of 14.66 with a p-value of approximately 0. This indicates that there are statistically significant differences in the incidence rates of colorectal, lung, breast, prostate, and urinary system cancers in Lake County, Illinois. The extremely low p-value suggests that the likelihood that these differences could have occurred by chance is very small.
+
+#To sum up, the data supports the existence of significant variability in the incidence rates of these cancers. This finding could serve as a basis for further investigation into the factors contributing to these differences, which could include genetic, environmental, lifestyle, or healthcare-related factors. The conclusion should also discuss the implications of these findings for public health policy, cancer research, and targeted interventions in Lake County, Illinois.
+
+
+
+
+
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+```{r}
+
+```
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+
+```{r}
+
+```
+
+```{r}
+
+```
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
