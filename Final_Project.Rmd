@@ -25,12 +25,18 @@ library(readxl)
 
 # Read the data from the CSV file
 path1 <- "C:/Users/mayc0/OneDrive/桌面/Cancer_Rates.xlsx"
-path2 <- "C:/Users/17404/Desktop/STAT 184/Cancer_Rates.csv"
-path3 <- "C:/Users/17404/Desktop/STAT 184/Facility_Site_Points.csv"
-path4 <- "C:/Users/17404/Desktop/STAT 184/Obesity_Percentages.csv"
-Cancer_Rates <- read_csv(path2)
-facilities <- read_csv(path3)
-obesity <- read_csv(path4)
+path2 <- "C:/Users/mayc0/OneDrive/桌面/Cancer_Rates.xlsx"
+path3 <- "C:/Users/mayc0/OneDrive/桌面/Facility_Site_Points.xlsx"
+path4 <- "C:/Users/mayc0/OneDrive/桌面/Obesity_Percentages.xlsx"
+Cancer_Rates <- read_excel(path2)
+facilities <- read_excel(path3)
+obesity <- read_excel(path4)
+
+
+
+
+
+
 
 
 # Inspect the structure of the data
@@ -39,6 +45,15 @@ glimpse(Cancer_Rates)
 head(Cancer_Rates)
 
 ```
+
+path1 <- "C:/Users/mayc0/OneDrive/桌面/Cancer_Rates.xlsx"
+path2 <- "C:/Users/17404/Desktop/STAT 184/Cancer_Rates.csv"
+path3 <- "C:/Users/17404/Desktop/STAT 184/Facility_Site_Points.csv"
+path4 <- "C:/Users/17404/Desktop/STAT 184/Obesity_Percentages.csv"
+Cancer_Rates <- read_csv(path2)
+facilities <- read_csv(path3)
+obesity <- read_csv(path4)
+
 
 #Step 2: Data Wrangling
 ##Focus on selecting and cleaning the data relevant to the cancer types of interest.
@@ -191,7 +206,7 @@ cancers_difference_by_zip$Average <- rowMeans(cancers_difference_by_zip[, c("Col
 cancers_difference_average <- data.frame(ZIP = cancers_difference_by_zip$ZIP, Average = cancers_difference_by_zip$Average)
 
 abnormal_zip <- cancers_difference_average %>%
-  filter(abs(Average)>30)
+  filter(abs(Average)>20)
 
 difference_by_zip_output <- abnormal_zip %>%
   gt() %>%
@@ -218,6 +233,136 @@ head(health_facilities,10)
 ```
 Yet, the health-related facilities in this data set are not inclusive and many of the entities has no recorded zip code, so we have only ten facilities related to corresponding zipcodes, which is not enough to make any conclusion. However, as you may notice, zipcode 60085 has five recorded health facilities, which could account for a reason of low cancer incidence rate(in average, 39.966% lower than the corresponding median) of that area.
 
+
+
+Now we start looking at the obesity data
 ```{r}
+obesity <- read_excel(path4)
+excluded_zips <- c(60010,60020,60035, 60045, 60069, 60041)
+# Filter out the specified zip codes
+filtered_data <- obesity[!obesity$ZIP %in% excluded_zips, ]
+
+# Compute mean values of Pct_Obese and ObsOrOvrwt for excluded zip codes
+mean_excluded <- obesity[obesity$ZIP %in% excluded_zips, ] %>%
+  summarise(Mean_Pct_Obese = mean(Pct_Obese), Mean_ObsOrOvrwt = mean(ObsOrOvrwt))
+
+# Compute mean values for the remaining zip codes
+mean_remaining <- filtered_data %>%
+  summarise(Mean_Pct_Obese = mean(Pct_Obese), Mean_ObsOrOvrwt = mean(ObsOrOvrwt))
+
+# Combine the results for comparison
+results <- rbind(mean_excluded, mean_remaining)
+row.names(results) <- c('Excluded Zip Codes', 'Remaining Zip Codes')
+results
 
 ```
+For the excluded zip codes:
+
+Mean Percentage of Obese (Pct_Obese): 0.1995714 (approximately 19.96%)
+Mean Percentage of Overweight or Obese (ObsOrOvrwt): 0.5452857 (approximately 54.53%)
+For the remaining zip codes:
+
+Mean Percentage of Obese (Pct_Obese): 0.2279500 (approximately 22.80%)
+Mean Percentage of Overweight or Obese (ObsOrOvrwt): 0.5718500 (approximately 57.19%)
+
+
+```{r}
+selected_zip_codes <- c(60010, 60020, 60035, 60045, 60069, 60041)
+
+filtered_cancer <- Cancer_Rates[Cancer_Rates$ZIP %in% selected_zip_codes, ]
+
+selected_data <- filtered_cancer$All_Cancer
+```
+
+
+
+```{r}
+excluded_data <- c(60010, 60020, 60035, 60045, 60069, 60041)
+filtered_obse <- obesity[obesity$ZIP %in% excluded_data, ]
+```
+
+
+
+
+
+```{r}
+library(ggplot2)
+
+ggplot(data = filtered_obse, aes(x = Pct_Obese, y = selected_data)) +
+    geom_point() +
+      geom_smooth(method = "lm", color = "yellow") +
+
+    labs(x = "Percentage of Obese",
+         y = "Incidence Rate",
+         title = "Scatter plot of Percentage of Obese vs. Incidence Rate") +
+    theme_minimal()
+
+```
+
+
+```{r}
+ggplot(data = filtered_obse, aes(x = ObsOrOvrwt, y = selected_data)) +
+    geom_point() +
+        geom_smooth(method = "lm", color = "green") +
+
+    labs(x = "Percentage of Overweight and Obese",
+         y = "Incidence Rate",
+         title = "Scatter plot of Percentage of Overweight and Obese vs. Incidence Rate") +
+    theme_minimal()
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Then for rigorous research, we conduct t test.
+
+```{r}
+library(broom)
+
+# Separate the dataset into two groups
+excluded_data <- obesity %>% filter(ZIP %in% excluded_zips)
+remaining_data <- obesity %>% filter(!ZIP %in% excluded_zips)
+
+# Perform a t-test for Pct_Obese
+t_test_obese <- t.test(excluded_data$Pct_Obese, remaining_data$Pct_Obese)
+
+# Perform a t-test for ObsOrOvrwt
+t_test_overweight <- t.test(excluded_data$ObsOrOvrwt, remaining_data$ObsOrOvrwt)
+
+# Output the results of the t-tests
+list(
+  Pct_Obese = tidy(t_test_obese),
+  ObsOrOvrwt = tidy(t_test_overweight)
+)
+
+```
+Here's the summary of the results:
+For the Pct_Obese variable:
+
+Estimate of difference (mean in excluded zip codes - mean in remaining zip codes): -0.02837857
+p-value: 0.4086131
+For the ObsOrOvrwt variable:
+
+Estimate of difference: -0.02656429
+p-value: 0.476115
+The p-values in both tests are greater than 0.05, indicating that there are no statistically significant differences in the mean percentages of obesity (Pct_Obese) and overweight or obese (ObsOrOvrwt) between the excluded zip codes and the remaining zip codes.
+
+
+
+
