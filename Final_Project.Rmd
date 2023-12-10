@@ -3,9 +3,9 @@ title: "Cancers Incidence Rate Analysis on Lake County, Illinois"
 author: "Yuchen Ma, Jianxiang Gao"
 date: "2023-11-25"
 output:
+  html_document: default
   pdf_document:
     latex_engine: xelatex
-  html_document: default
   word_document: default
 ---
 
@@ -55,7 +55,24 @@ library(dplyr)
 library(tidyr)
 library(readxl)
 
+path1 <- "C:/Users/mayc0/OneDrive/桌面/Cancer_Rates.xlsx"
+path2 <- "C:/Users/mayc0/OneDrive/桌面/Cancer_Rates.xlsx"
+path3 <- "C:/Users/mayc0/OneDrive/桌面/Facility_Site_Points.xlsx"
+path4 <- "C:/Users/mayc0/OneDrive/桌面/Obesity_Percentages.xlsx"
 
+
+
+cancer_rate <- read_excel(path2)
+facilities <- read_excel(path3)
+obesity <- read_excel(path4)
+
+
+
+
+
+
+
+```
 
 path1 <- "C:/Users/mayc0/OneDrive/桌面/Cancer_Rates.xlsx"
 path2 <- "C:/Users/17404/Desktop/STAT 184/Cancer_Rates.csv"
@@ -64,12 +81,6 @@ path4 <- "C:/Users/17404/Desktop/STAT 184/Obesity_Percentages.csv"
 cancer_rate <- read_csv(path2)
 facilities <- read_csv(path3)
 obesity <- read_csv(path4)
-
-
-
-```
-
-
 
 ```{r message = FALSE}
 library(dplyr)
@@ -127,7 +138,7 @@ ggplot(cancer_data_long, aes(x = Cancer_Type, y = Incidence_Rate)) +
 Apparently, Breast Cancer has a remarkably high incidence rates, while the other four types have a similar incidence rates.
 
 
-In order answer the research question, we need to calculate the variance of average incidence rate away from the median for each ZIP code. We do this by calculating the average of variance of five cancers types, and those zip codes with average variance higher or lower than 20 have been retained(i.e, in average, each cancer types is 20% higher or lower than the corresponding median)
+In order answer the research question, we need to calculate the variance of average incidence rate away from the median for each ZIP code. We do this by calculating the average of variance of five cancers types, and those zip codes with average variance higher or lower than 20 have been retained(i.e, in average, each cancer types is 30% higher or lower than the corresponding median)
 
 
 Based on the bar graph below, clearly some of the regions has overall higher or lower incidence rate. Our next target is to try to analyze what caused the difference 
@@ -244,6 +255,7 @@ ggplot(
 
 There could be infinitely many causes, but the focus here are two factors: obesity rate and number of health facility
 
+### Statistical Analysis of Health Facility
 
 ```{r message = FALSE}
 health_facilities <- facilities %>%
@@ -255,11 +267,31 @@ health_facilities <- facilities %>%
 head(health_facilities,30)
 
 ```
-Yet, the health-related facilities in this data set are not inclusive and many of the entities has no recorded zip code, so we have only ten facilities related to corresponding zipcodes, which is not enough to make any conclusion. However, as you may notice, zipcode 60085 has five recorded health facilities, which could account for a reason of low cancer incidence rate(in average, 39.966% lower than the corresponding median) of that area.
+Yet, the health-related facilities in this data set are not inclusive and many of the entities has no recorded zip code, so we have only ten facilities related to corresponding zipcodes, which is not enough to make any conclusion. However, as you may notice, zipcode 60085 has five recorded health facilitwies, which could account for a reason of low cancer incidence rate(in average, 39.966% lower than the corresponding median) of that area.
 
 
+### Statistical Analysis of Obesity Rate
+
+
+
+#### Intro to Obesity Data
 
 Now we start looking at the obesity data
+First let's take a look at obesity data. This data has two variables, they are:
+
+Pct_Obese – The percent of people in the zip code who are considered obese, defined as having a BMI greater than or equal to 30.
+
+ObsOrOvrwt –The percent of people in the zip code who are considered overweight (defined as having a BMI greater than or equal to 25 but less than 30) or obese (defined as having a BMI greater than or equal to 30).
+
+
+Then we selected six of the above ten abnormal zipcodes with positive variances for testing convenience.
+
+
+
+
+#### Mean
+
+Next, we compare the average obesity data of these six abnormal zipcodes with the average obesity data of other zipcodes.
 ```{r message = FALSE}
 obese_average <- mean(obesity$Pct_Obese)
 overweight_average <- mean(obesity$ObsOrOvrwt)
@@ -284,16 +316,29 @@ results
 ```
 For the excluded zip codes:
 
-Mean Percentage of Obese (Pct_Obese): 0.1995714 (approximately 19.96%)
-Mean Percentage of Overweight or Obese (ObsOrOvrwt): 0.5452857 (approximately 54.53%)
+Mean Percentage of Obese (Pct_Obese): 0.17 (approximately 17.00%)
+Mean Percentage of Overweight or Obese (ObsOrOvrwt): 0.5111667 (approximately 51.12%)
 For the remaining zip codes:
 
-Mean Percentage of Obese (Pct_Obese): 0.2279500 (approximately 22.80%)
-Mean Percentage of Overweight or Obese (ObsOrOvrwt): 0.5718500 (approximately 57.19%)
+Mean Percentage of Obese (Pct_Obese): 0.2350476 (approximately 23.50%)
+Mean Percentage of Overweight or Obese (ObsOrOvrwt): 0.5803333 (approximately 58.03%)
+
+We found that there was a difference but not a huge one.
 
 
 
-Then for rigorous research, we conduct t test.
+
+#### t-test
+
+
+Then for rigorous research, we conduct t-test.
+Hypothesis test:
+Is there a difference between obesity rate of the six abnormal zipcodes and obesity rate of other zipcodes?"
+
+the hypotheses might be formally stated as:
+Null hypothesis: There is no difference in the obesity rate between the six abnormal ZIP codes and the other ZIP codes.
+Alternative hypothesis: There is a difference in the obesity rate between the six abnormal ZIP codes and the other ZIP codes.
+We assume that the significance level is 5%.
 
 ```{r message = FALSE}
 library(broom)
@@ -315,39 +360,40 @@ list(
 )
 
 ```
-Here's the summary of the results:
-For the Pct_Obese variable:
-
-Estimate of difference (mean in excluded zip codes - mean in remaining zip codes): -0.02837857
-p-value: 0.4086131
-For the ObsOrOvrwt variable:
-
-Estimate of difference: -0.02656429
-p-value: 0.476115
-The p-values in both tests are greater than 0.05, indicating that there are no statistically significant differences in the mean percentages of obesity (Pct_Obese) and overweight or obese (ObsOrOvrwt) between the excluded zip codes and the remaining zip codes.
 
 
 
+#### P-value
+We mainly care about the p-value, so we specifically extracted the p-values of the two sets of t-tests and made them into tables.
+
+```{r}
+p_values <- data.frame(
+  Test = c("Pct_Obese", "ObsOrOvrwt"),
+  P_Value = c(t_test_obese$p.value, t_test_overweight$p.value)
+)
+
+ggplot(p_values, aes(x = Test, y = P_Value)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  geom_hline(yintercept = 0.05, linetype = "dashed", color = "red") +
+  annotate("text", x = 1.5, y = 0.055, label = "Significance threshold (0.05)", color = "red", size = 3.5) +
+  geom_text(aes(label = round(P_Value, 3)), vjust = -0.5) +
+  ylim(0, 0.075) +
+  labs(title = "P-Values of T-Tests", x = "Test", y = "P-Value") +
+  theme_minimal()
+
+```
 
 
 
+#### scatter plots
 
-
-
-
-
-
-
-
-
+In order to show the relationship between obesity and cancer incidence rate more intuitively, we related the cancer incidence rate of the six zipcodes to the Percentage of Overweight or Obese and the Percentage of Obese respectively, and drew two scatter plots.
 
 ```{r message = FALSE}
-
-selected_zip_codes <- c(60010, 60020, 60035, 60045, 60069, 60041)
-filtered_cancer <- cancer_rate[cancer_rate$ZIP %in% selected_zip_codes, ]
+excluded_zips <- c(60010, 60020, 60035, 60045, 60069, 60041)
+filtered_cancer <- cancer_rate[cancer_rate$ZIP %in% excluded_zips, ]
 selected_data <- filtered_cancer$All_Cancer
-excluded_data <- c(60010, 60020, 60035, 60045, 60069, 60041)
-filtered_obse <- obesity[obesity$ZIP %in% excluded_data, ]
+filtered_obse <- obesity[obesity$ZIP %in% excluded_zips, ]
 
 #weight_vs_incidence <- merge(filtered_obse, cancer_rate, by = "ZIP", all.x = TRUE, all.y = TRUE) %>%
 #  select(ZIP, Pct_Obese, ObsOrOvrwt, All_Cancer)
@@ -356,9 +402,9 @@ ggplot(data = filtered_obse, aes(x = ObsOrOvrwt, y = selected_data)) +
     geom_point() +
         geom_smooth(method = "lm", color = "green") +
 
-    labs(x = "Percentage of Overweight",
+    labs(x = "Percentage of Overweight or Obese",
          y = "Incidence Rate",
-         title = "Scatter plot of Percentage of Overweight vs. Incidence Rate") +
+         title = "Scatter plot of Percentage of Overweightor or Obese vs. Incidence Rate") +
     theme_minimal()+
     theme(plot.title = element_text(hjust = 0.5))
 
@@ -377,11 +423,45 @@ ggplot(data = filtered_obse, aes(x = Pct_Obese, y = selected_data)) +
     theme(plot.title = element_text(hjust = 0.5))
 ```
 
+
+
+
+#### Test Summary
+
+Here's the summary of the results:
+For the ObsOrOvrwt variable:
+p-value: 0.043
+
+For the Pct_Obese variable:
+p-value: 0.042
+
+The p-values in both tests are greater than 0.05 and we reject the null hypothesis, indicating that there are statistically significant differences in the mean percentages of obesity (Pct_Obese) and overweight or obese (ObsOrOvrwt) between the excluded zip codes and the remaining zip codes.
+
+This shows that in areas with abnormal cancer incidence rates such as 60010, 60020, 60035, 60045, 60069, 60041, the probability of obesity and overweight or obese is significantly different from areas other than areas with abnormal cancer incidence rates.
+
+Therefore, based on the conclusion of t-test, we boldly speculate that the statistically significant difference in the incidence rates of five cancer types among different areas (ZIP code) of Lake County, Illinois is caused by obesity.
+
+But in fact we can only guess that the obesity rate may affect the cancer incidence rate, because our t-test can only show that the obesity rate is also abnormal in other areas in places where cancer is abnormal, but we have not yet determined the reasons for the difference.
+
+
+
+
+
+
+# Conclusion 
+
+First, we found and proved through ANOVA test and box plot that there is a statistically significant difference in the incidence rates of five cancer types among different areas (ZIP code) of Lake County, Illinois. 
+Then, we calculate the variance of average incidence rate away from the median for each ZIP code and drew a bar graph, and found 10 zipcodes with abnormal cancer incidence rates.
+
+After that, we started the second phase of the project, finding the reasons for the abnormal cancer rates. Due to endless factors, we chose to study the two most important factors: obesity rate and number of health facilities.
+In the study on number of health facilities, we were unable to draw conclusions because there were too few data. But we found that zipcode 60085 has five recorded health facilities, which could account for a reason of low cancer incidence rate.
+Finally, in our study of obesity rates, we used t-tests and graphs to find the obesity rate is also abnormal in other areas in places where cancer incidence rate is abnormal, so we can only guess that the obesity rate may affect the cancer incidence rate, but we have not yet determined the reasons for the difference.
+
+
 # Appendix: All code for this report
 
 ```{r ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
 ```
-
 
 
 
