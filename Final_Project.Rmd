@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "Cancers Incidence Rate Analysis on Lake County, Illinois"
 author: "Yuchen Ma, Jianxiang Gao"
 date: "2023-11-25"
 output:
@@ -9,71 +9,82 @@ output:
   word_document: default
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, include=FALSE, message = FALSE}
+knitr::opts_chunk$set(echo = FALSE)
 ```
 
-#Step 1: Data Preparation
-## Loading and Inspecting Data
+## Introduction
 
-```{r}
-# Load necessary libraries
+In my consciousness, I believed the incidence rate of cancers should be uniform in a relatively large region. I never think about it in more depth, until I had a conversation with my friend living in Lake County, Illinois. He told me many people he know living in his community got cancers, and that drive me to think: is it possible that the cancer incidence rates actually vary in a small area scope, for example, zip codes?
+
+This lead me to raise this research question:
+Is there a statistically significant difference in the incidence rates of five cancer types among different areas(ZIP code) of Lake County, Illinois? If so, what cause it?
+
+
+## Data Inspectation and Wrangling
+
+We have analyzed three data sets to answer our research question, which are: 'cancer_rate', 'facilities', and 'obesity'. All data are published by government of Lake County, Illinois. All data are already in tidy-data form. The following columns is what we used in our analysis.
+
+cancer_rate:
+The data in columns 2-7 are average incidence rate per 100,000 people
+
+1. ZIP
+2. Colorectal Cancer
+3. Lung Cancer
+4. Breast Cancer
+5. Prostate Cancer
+6. Urinary System Cancer
+7. All Cancer: Incidence rate of all reported cancers(included but not limited to above five cancer types ).
+
+facilities:
+1.ZIP
+2.Feature Code: type of the facilities(ex: Law Enforcement, Hospital, College, etc.).
+
+obesity:
+1.ZIP
+2.Overweight percentage(Including Obese)
+3.Obese percentage
+
+Data Wrangling process in this project only contain some selection and structure conversion as the original data are already in tidy form.
+
+
+```{r message = FALSE}
+# The programming style we used is Snake Case
 library(readr)
 library(dplyr)
 library(tidyr)
 library(readxl)
 
-# Read the data from the CSV file
-path1 <- "C:/Users/mayc0/OneDrive/桌面/Cancer_Rates.xlsx"
-path2 <- "C:/Users/mayc0/OneDrive/桌面/Cancer_Rates.xlsx"
-path3 <- "C:/Users/mayc0/OneDrive/桌面/Facility_Site_Points.xlsx"
-path4 <- "C:/Users/mayc0/OneDrive/桌面/Obesity_Percentages.xlsx"
-Cancer_Rates <- read_excel(path2)
-facilities <- read_excel(path3)
-obesity <- read_excel(path4)
 
-
-
-
-
-
-
-
-# Inspect the structure of the data
-str(Cancer_Rates)
-glimpse(Cancer_Rates)
-head(Cancer_Rates)
-
-```
 
 path1 <- "C:/Users/mayc0/OneDrive/桌面/Cancer_Rates.xlsx"
 path2 <- "C:/Users/17404/Desktop/STAT 184/Cancer_Rates.csv"
 path3 <- "C:/Users/17404/Desktop/STAT 184/Facility_Site_Points.csv"
 path4 <- "C:/Users/17404/Desktop/STAT 184/Obesity_Percentages.csv"
-Cancer_Rates <- read_csv(path2)
+cancer_rate <- read_csv(path2)
 facilities <- read_csv(path3)
 obesity <- read_csv(path4)
 
 
-#Step 2: Data Wrangling
-##Focus on selecting and cleaning the data relevant to the cancer types of interest.
-```{r}
+
+```
+
+
+
+```{r message = FALSE}
 library(dplyr)
-cancer_data_selected_raw <- select(Cancer_Rates, Colorectal, Lung_Bronc, Breast_Can, Prostate_C, Urinary_Sy)
+cancer_data_selected_raw <- select(cancer_rate, Colorectal, Lung_Bronc, Breast_Can, Prostate_C, Urinary_Sy)
 
 # Round all numeric values to two decimal places
 cancer_data_selected <- round(cancer_data_selected_raw, 2)
 
 ```
-##Check for Missing Values:
-```{r}
-sum(is.na(cancer_data_selected))
 
-```
 
-#Step 3: Statistical Analysis
-##Perform an ANOVA test to determine if there are differences among the cancer types.
-```{r}
+##Statistical Analysis of Variance Existence
+Before analyzing difference in the incidence rates of five cancer types among different ZIP code, we have to answer one question. Is there a variance of incidence between five cancer types? To answer this, we performed ANOVA test. Our Null Hypothesis is: there is no difference between incidence rates of five cancer types
+
+```{r message = FALSE}
 library(tidyr)
 library(dplyr)
 
@@ -91,10 +102,10 @@ summary(res)
 
 ```
 
+Based on the ANOVA results, we have a highly significant F-value of 14.66 with a p-value of approximately 0. This indicates that there are statistically significant differences in the incidence rates of colorectal, lung, breast, prostate, and urinary system cancers in Lake County, Illinois. The extremely low p-value suggests that the likelihood that these differences could have occurred by chance is very small.
 
-#Step 4: Data Visualization
-##Create visualizations to support your statistical analysis.
-```{r}
+The figure below displays a box plot of incidence rate of five cancers type, each point represent the incidence rate of cancer type of a ZIP code
+```{r message = FALSE}
 library(ggplot2)
 
 ggplot(cancer_data_long, aes(x = Cancer_Type, y = Incidence_Rate)) +
@@ -105,9 +116,7 @@ ggplot(cancer_data_long, aes(x = Cancer_Type, y = Incidence_Rate)) +
   theme(plot.title = element_text(hjust = 0.5))
 
 
-#Based on the ANOVA results quoted from your document, we have a highly significant F-value of 14.66 with a p-value of approximately 0. This indicates that there are statistically significant differences in the incidence rates of colorectal, lung, breast, prostate, and urinary system cancers in Lake County, Illinois. The extremely low p-value suggests that the likelihood that these differences could have occurred by chance is very small.
 
-#To sum up, the data supports the existence of significant variability in the incidence rates of these cancers. This finding could serve as a basis for further investigation into the factors contributing to these differences, which could include genetic, environmental, lifestyle, or healthcare-related factors. The conclusion should also discuss the implications of these findings for public health policy, cancer research, and targeted interventions in Lake County, Illinois.
 
 
 
@@ -115,19 +124,19 @@ ggplot(cancer_data_long, aes(x = Cancer_Type, y = Incidence_Rate)) +
 
 
 ```
+Apparently, Breast Cancer has a remarkably high incidence rates, while the other four types have a similar incidence rates.
 
-The follow codes aim to analyze the difference of incidence rate based on different zip code.
 
-The result obtained is in the form of percentage, yet the % sign is omitted. i.e, 20 means 20%, -34 means -34%, or 34% lower than the median
+In order answer the research question, we need to calculate the variance of average incidence rate away from the median for each ZIP code. We do this by calculating the average of variance of five cancers types, and those zip codes with average variance higher or lower than 20 have been retained(i.e, in average, each cancer types is 20% higher or lower than the corresponding median)
 
-Based on the result, clearly some of the regions has overall higher or lower incidence rate. Our next target is to try to analyze what caused the difference 
-```{r}
-library(kableExtra)
+
+Based on the bar graph below, clearly some of the regions has overall higher or lower incidence rate. Our next target is to try to analyze what caused the difference 
+```{r message = FALSE}
 library(dplyr)
 library(gt)
 
 
-cancers_with_zip <- select(Cancer_Rates,ZIP, Colorectal, Lung_Bronc, Breast_Can, Prostate_C, Urinary_Sy) #now include zip code
+cancers_with_zip <- select(cancer_rate,ZIP, Colorectal, Lung_Bronc, Breast_Can, Prostate_C, Urinary_Sy) #now include zip code
 
 difference_by_percentage <- function(value,median){
   return((value - median)/median)
@@ -190,13 +199,10 @@ cancers_difference_by_zip <- cancers_with_zip %>%
 ```
 
 
-Now, the focus should be on a few cases that is extremely abnormal. In this code chunk,
-the average of variance of five cancers types has been calculated for each row, and
-those zip codes with average higher or lower than 30 have been retained(i.e, in average, 
-each cancer types is 30% higher or lower than the corresponding median)
-```{r}
+```{r message = FALSE}
 # Load the dplyr package
 library(dplyr)
+library(ggplot2)
 
 
 
@@ -208,27 +214,45 @@ cancers_difference_average <- data.frame(ZIP = cancers_difference_by_zip$ZIP, Av
 abnormal_zip <- cancers_difference_average %>%
   filter(abs(Average)>20)
 
-difference_by_zip_output <- abnormal_zip %>%
-  gt() %>%
-  tab_options(table.width = "100%") %>%
-  cols_label(
-    ZIP = "ZIP",
-    Average = "Average"
-  )
+#difference_by_zip_output <- abnormal_zip %>%
+#  gt() %>%
+#  tab_options(table.width = "100%") %>%
+#  cols_label(
+#    ZIP = "ZIP",
+#    Average = "Average"
+#  )
 
-difference_by_zip_output
+abnormal_zip$ZIP <- factor(abnormal_zip$ZIP)
+
+ggplot(
+  data = abnormal_zip,
+  aes(x = ZIP, y = Average)
+) +
+  geom_bar(stat = "identity", fill = "steelblue",width = 0.7) +  # Adjust fill color as needed
+  theme_minimal() +  # You can change the theme as per your preference
+  labs(title = "Average variance from the median", 
+       x = "ZIP", y = "Average Variance") + theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    plot.title = element_text(hjust = 0.5),    
+    panel.grid.major.x = element_blank(),
+    panel.grid.minor.x = element_blank()
+  )
 
 ```
 
-Obviously, four of the zipcodes has remarkably high cancer incidence rate, while the other three zipcodes has low incidence rate. There could be infinitely many causes, but the focus here are two factors: obesity rate and number of health facility
-```{r}
+## Statistical Analysis of Cause of The Variance
+
+There could be infinitely many causes, but the focus here are two factors: obesity rate and number of health facility
+
+
+```{r message = FALSE}
 health_facilities <- facilities %>%
   select(ZIP,FEATURECODE)%>%#only retain relevant rows
   filter(grepl("^(Hospital|Health|Medical)", FEATURECODE, ignore.case = TRUE)
-         & grepl("^(60035|60040|60045|60069|60073|60085|60041)", ZIP))%>%
+         & grepl("^(60010|60020|60035|60045|60069|60041|60040|60064|60073|60085)", ZIP))%>%
   mutate(ZIP = substr(ZIP, 1, 5))#We only interested in the first five digit of zipcode
 
-head(health_facilities,10)
+head(health_facilities,30)
 
 ```
 Yet, the health-related facilities in this data set are not inclusive and many of the entities has no recorded zip code, so we have only ten facilities related to corresponding zipcodes, which is not enough to make any conclusion. However, as you may notice, zipcode 60085 has five recorded health facilities, which could account for a reason of low cancer incidence rate(in average, 39.966% lower than the corresponding median) of that area.
@@ -236,9 +260,11 @@ Yet, the health-related facilities in this data set are not inclusive and many o
 
 
 Now we start looking at the obesity data
-```{r}
-obesity <- read_excel(path4)
-excluded_zips <- c(60010,60020,60035, 60045, 60069, 60041)
+```{r message = FALSE}
+obese_average <- mean(obesity$Pct_Obese)
+overweight_average <- mean(obesity$ObsOrOvrwt)
+
+excluded_zips <- c( 60010,60020,60035,60045, 60069,60041)
 # Filter out the specified zip codes
 filtered_data <- obesity[!obesity$ZIP %in% excluded_zips, ]
 
@@ -266,73 +292,10 @@ Mean Percentage of Obese (Pct_Obese): 0.2279500 (approximately 22.80%)
 Mean Percentage of Overweight or Obese (ObsOrOvrwt): 0.5718500 (approximately 57.19%)
 
 
-```{r}
-selected_zip_codes <- c(60010, 60020, 60035, 60045, 60069, 60041)
-
-filtered_cancer <- Cancer_Rates[Cancer_Rates$ZIP %in% selected_zip_codes, ]
-
-selected_data <- filtered_cancer$All_Cancer
-```
-
-
-
-```{r}
-excluded_data <- c(60010, 60020, 60035, 60045, 60069, 60041)
-filtered_obse <- obesity[obesity$ZIP %in% excluded_data, ]
-```
-
-
-
-
-
-```{r}
-library(ggplot2)
-
-ggplot(data = filtered_obse, aes(x = Pct_Obese, y = selected_data)) +
-    geom_point() +
-      geom_smooth(method = "lm", color = "yellow") +
-
-    labs(x = "Percentage of Obese",
-         y = "Incidence Rate",
-         title = "Scatter plot of Percentage of Obese vs. Incidence Rate") +
-    theme_minimal()
-
-```
-
-
-```{r}
-ggplot(data = filtered_obse, aes(x = ObsOrOvrwt, y = selected_data)) +
-    geom_point() +
-        geom_smooth(method = "lm", color = "green") +
-
-    labs(x = "Percentage of Overweight and Obese",
-         y = "Incidence Rate",
-         title = "Scatter plot of Percentage of Overweight and Obese vs. Incidence Rate") +
-    theme_minimal()
-
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 Then for rigorous research, we conduct t test.
 
-```{r}
+```{r message = FALSE}
 library(broom)
 
 # Separate the dataset into two groups
@@ -362,6 +325,62 @@ For the ObsOrOvrwt variable:
 Estimate of difference: -0.02656429
 p-value: 0.476115
 The p-values in both tests are greater than 0.05, indicating that there are no statistically significant differences in the mean percentages of obesity (Pct_Obese) and overweight or obese (ObsOrOvrwt) between the excluded zip codes and the remaining zip codes.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r message = FALSE}
+
+selected_zip_codes <- c(60010, 60020, 60035, 60045, 60069, 60041)
+filtered_cancer <- cancer_rate[cancer_rate$ZIP %in% selected_zip_codes, ]
+selected_data <- filtered_cancer$All_Cancer
+excluded_data <- c(60010, 60020, 60035, 60045, 60069, 60041)
+filtered_obse <- obesity[obesity$ZIP %in% excluded_data, ]
+
+#weight_vs_incidence <- merge(filtered_obse, cancer_rate, by = "ZIP", all.x = TRUE, all.y = TRUE) %>%
+#  select(ZIP, Pct_Obese, ObsOrOvrwt, All_Cancer)
+
+ggplot(data = filtered_obse, aes(x = ObsOrOvrwt, y = selected_data)) +
+    geom_point() +
+        geom_smooth(method = "lm", color = "green") +
+
+    labs(x = "Percentage of Overweight",
+         y = "Incidence Rate",
+         title = "Scatter plot of Percentage of Overweight vs. Incidence Rate") +
+    theme_minimal()+
+    theme(plot.title = element_text(hjust = 0.5))
+
+```
+
+
+```{r message = FALSE}
+ggplot(data = filtered_obse, aes(x = Pct_Obese, y = selected_data)) +
+    geom_point() +
+      geom_smooth(method = "lm", color = "yellow") +
+
+    labs(x = "Percentage of Obese",
+         y = "Incidence Rate",
+         title = "Scatter plot of Percentage of Obese vs. Incidence Rate") +
+    theme_minimal()+
+    theme(plot.title = element_text(hjust = 0.5))
+```
+
+# Appendix: All code for this report
+
+```{r ref.label=knitr::all_labels(), echo=TRUE, eval=FALSE}
+```
 
 
 
